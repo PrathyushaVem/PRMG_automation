@@ -1,0 +1,24 @@
+{
+  "encompass":{
+  "borrowerInformation": {
+    "name": {
+      "firstName":"Ram",
+      "middleName":"Automation",
+      "lastName":"Vem"
+    },
+    "ssn": {
+      "value":"199999999"
+    },
+    "dateOfBirth": {
+      "value":"05081999"
+    },
+    "homePhone": {
+      "num":"1111111111"
+    },
+    "email": {
+      "mail":"PVemparala@PRMG.NET"
+    }
+  }
+ }
+
+}
