@@ -1,4 +1,4 @@
-import {LoginPage} from "./loginPage"
+import { LoginPage } from "./loginPage"
 import { EncompassPage } from "./encompass"
 
-export{LoginPage,EncompassPage}
+export { LoginPage, EncompassPage }

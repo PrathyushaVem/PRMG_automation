@@ -1,0 +1,21 @@
+Number of Loans: 2
+
+ STARTING LOAN 1 
+
+Filling data for borrower pair 1 of 2
+no of borrower pairs: 2
+Filling Borrower Pair 1
+Filling Borrower Pair 2
+
+ LOAN 1 CREATED SUCCESSFULLY 
+
+Number of Loans: 2
+
+ STARTING LOAN 2 
+
+Filling data for borrower pair 1 of 1
+no of borrower pairs: 1
+Filling Borrower Pair 1
+
+ LOAN 2 CREATED SUCCESSFULLY 
+

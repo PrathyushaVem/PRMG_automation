@@ -65,38 +65,14 @@ exports.LoginPage = class LoginPage {
   };
 
   loginWithValidCredentials = async (email, pwd) => {
-    await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    });
     await highlightElement(this.page,this.username);
-    await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    });
     await this.fillingUsername(email);
-    await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    });
     await highlightElement(this.page,this.nextBtn);
-    await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    });
     await this.clickOnNextBtn();
-    await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    });
     await highlightElement(this.page,this.password);
-    await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    });
     await this.fillingPassword(pwd);
     await highlightElement(this.page,this.verifyBtn);
-    await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    });
     await this.clickOnVerifyButton(); 
   };
-
-
-
 
 };
