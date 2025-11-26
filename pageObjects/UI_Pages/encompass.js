@@ -1817,16 +1817,8 @@ exports.EncompassPage = class EncompassPage {
     await excuteSteps(this.test, this.militaryServiceOption, "click", `Clicking on Military Service Option`);
   };
 
-  clickOnLanguagePreferenceOption = async () => {
-    await excuteSteps(this.test, this.languagePreferenceOption, "click", `Clicking on Language Preference Option`);
-  };
-
   clickOnCoMilitaryServiceOption = async () => {
     await excuteSteps(this.test, this.coMilitaryServiceOption, "click", `Clicking on Co Military Service Option`);
-  };
-
-  clickOnCoLanguagePreferenceOption = async () => {
-    await excuteSteps(this.test, this.coLanguagePreferenceOption, "click", `Clicking on Co Language Preference Option`);
   };
 
   fillMilitaryServiceLanguagePreferenceFromPairs = async (pairsData, i) => {
