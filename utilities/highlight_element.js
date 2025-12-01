@@ -10,4 +10,3 @@ exports.highlightElement = async (page, locator) => {
       element.style.backgroundColor = '';
     }, await locator.elementHandle())
   }
- 

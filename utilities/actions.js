@@ -21,7 +21,6 @@ exports.excuteSteps = async (test, element, action, description, data = [], page
                   return currentValue === expectedValue || normalizedCurrent === normalizedExpected;
                 })();
             if (isMatch) return;
-            //await page.waitForTimeout(parseInt(process.env.smallWait));
           } catch (err) {
             console.log(`Attempt ${attempt} failed for ${fieldName}:`, err.message);
           }
