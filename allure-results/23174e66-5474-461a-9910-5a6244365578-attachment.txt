@@ -1,0 +1,14 @@
+STARTING LOAN 1
+Borrower Pairs found for Loan 1: 8
+Total borrower pairs to fill: 1
+Filling Borrower Pair 1
+Filling detailed info for Borrower Pair 1
+Loan Number: 6255171718
+
+--- LOAN 1 CREATED SUCCESSFULLY ---
+
+STARTING LOAN 2
+Borrower Pairs found for Loan 2: 3
+Total borrower pairs to fill: 1
+Filling Borrower Pair 1
+Filling detailed info for Borrower Pair 1
