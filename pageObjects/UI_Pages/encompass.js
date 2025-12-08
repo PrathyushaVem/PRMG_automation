@@ -3,7 +3,6 @@ const { test, expect } = require("@playwright/test");
 const testData = require("../../test_Data/testData.json");
 const path = require("path");
 const { scrollToElement } = require("../../utilities/scrollInView");
-const { retryClick } = require("../../utilities/retryClick");
 
 const filePath = path.resolve(__dirname, "../../test_Data/Loan.xlsx");
 const {
