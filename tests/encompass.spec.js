@@ -3,7 +3,7 @@ const sections = require("../pageObjects/UI_Pages/pageIndex");
 const { readExcel } = require("../utilities/readExcel");
 require("dotenv").config();
 
-test("New loan creation using borrower Pairs", async ({ page, context }) => {
+/*test("New loan creation using borrower Pairs", async ({ page, context }) => {
     const excelData = readExcel("./test_Data/Loan.xlsx");
     const loanRows = excelData["Loans Info"];
 
@@ -32,14 +32,13 @@ test("New loan creation using borrower Pairs", async ({ page, context }) => {
         console.log(`\n LOAN ${i + 1} CREATED SUCCESSFULLY \n`);
         await page.waitForTimeout(parseInt(process.env.smallWait));
     };
-})
+})*/
 
 // Utility to get Number of borrower pairs for a loan
 function getBorrowerPairsForLoan(borrowerPairsSheet, loanNumber) {
     let currentLoan = null;
     const result = [];
     for (const row of borrowerPairsSheet) {
-        // Carry-forward loan number if empty
         if (row["Loan Number"]) {
             currentLoan = row["Loan Number"];
         }

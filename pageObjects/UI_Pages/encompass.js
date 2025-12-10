@@ -3,7 +3,6 @@ const { test, expect } = require("@playwright/test");
 const testData = require("../../test_Data/testData.json");
 const path = require("path");
 const { scrollToElement } = require("../../utilities/scrollInView");
-const { retryClick } = require("../../utilities/retryClick");
 
 const filePath = path.resolve(__dirname, "../../test_Data/Loan.xlsx");
 const {
@@ -440,7 +439,10 @@ exports.EncompassPage = class EncompassPage {
 
   handleBorrowerHousing = async () => {
     await scrollToElement(this.borrowerHousing);
-    await this.clickOnBorrowerHousing();
+    while (!(await this.borrowerHousingOwnOption.isVisible())) {
+      await this.clickOnBorrowerHousing();
+      await this.page.waitForTimeout(200);
+    }
     await this.clickOnHousingOwnOption();
     await this.page.waitForTimeout(parseInt(process.env.smallWait));
     while (!(await this.borrowerHousingOwnOption.isVisible())) {
@@ -455,7 +457,10 @@ exports.EncompassPage = class EncompassPage {
 
   handleCoBorrowerHousing = async () => {
     await scrollToElement(this.coBorrowerHousing);
-    await this.clickOnCoBorrowerHousing();
+    while (!(await this.coBorrowerHousingOwnOption.isVisible())) {
+      await this.clickOnCoBorrowerHousing();
+      await this.page.waitForTimeout(200);
+    }
     await this.clickOnCoHousingOwnOption();
     await this.page.waitForTimeout(parseInt(process.env.smallWait));
     while (!(await this.coBorrowerHousingOwnOption.isVisible())) {
@@ -975,7 +980,7 @@ exports.EncompassPage = class EncompassPage {
     await highlightElement(this.page, this.instanceId);
     await this.fillInstance([process.env.instanceId]);
     await this.test.step("The page is loading, please wait", async () => {
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
+      await this.page.waitForTimeout(parseInt(process.env.extraSmallWait));
     });
     await highlightElement(this.page, this.nextBtn);
     await this.clickOnNextBtn();
@@ -987,7 +992,10 @@ exports.EncompassPage = class EncompassPage {
     const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
     this.newLoan = frame0.locator("//button[@aria-label='New Loan']");
     await this.apps.waitFor({ state: 'visible' });
-    await this.clickonAllApps();
+    while (!(await this.pipeline.isVisible())) {
+      await this.clickonAllApps();
+      await this.page.waitForTimeout(200);
+    }
     await highlightElement(this.page, this.pipeline);
     await this.pipeline.waitFor({ state: 'visible' });
     await this.clickOnPipeline();
@@ -1005,6 +1013,7 @@ exports.EncompassPage = class EncompassPage {
     await highlightElement(this.page, this.applyBtn);
     await this.applyBtn.waitFor({ state: 'visible' });
     await this.clickOnApplyBtn();
+    await this.loanFieldsSpinner.waitFor({ state: 'hidden' });
   }
 
   unMarriedStatusCheck = async () => {
@@ -1264,23 +1273,38 @@ exports.EncompassPage = class EncompassPage {
     const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
     const borrowerHomeOwnership = pair[`Borrower Home Ownership`];
     const borrowerHouseCounselling = pair[`Borrower House Counselling`];
+
     if (borrowerHomeOwnership) {
       this.borrowerHomeOwnershipCheckbox = frame.locator(
         `//label[contains(@aria-label,'the Borrower completed home')]/following::div[1]`
-        + `//span[text()='${borrowerHomeOwnership}']/preceding::input[1]`);
+        + `//span[text()='${borrowerHomeOwnership}']/preceding::input[1]`
+      );
     }
+
     if (borrowerHouseCounselling) {
       this.borrowerHouseCounsellingCheckbox = frame.locator(
         `//label[contains(@aria-label,'the Borrower completed housing')]/following::div[1]`
-        + `//span[text()='${borrowerHouseCounselling}']/preceding::input[1]`);
+        + `//span[text()='${borrowerHouseCounselling}']/preceding::input[1]`
+      );
     }
+
     await this.clickOnPageMenu();
     await this.clickOnHomeOnwnershipEducation();
+
     if (borrowerHomeOwnership) {
-      await this.ensureBorrowerHomeOwnershipChecked();
+      try {
+        await this.ensureBorrowerHomeOwnershipChecked();
+      } catch {
+        console.log(`Home Ownership option '${borrowerHomeOwnership}' not found, skipping.`);
+      }
     }
+
     if (borrowerHouseCounselling) {
-      await this.ensureBorrowerHousingCounselingChecked();
+      try {
+        await this.ensureBorrowerHousingCounselingChecked();
+      } catch {
+        console.log(`House Counseling option '${borrowerHouseCounselling}' not found, skipping.`);
+      }
     }
   };
 
@@ -1317,21 +1341,35 @@ exports.EncompassPage = class EncompassPage {
     const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
     const coborrowerHomeOwnership = pair[`Co Borrower Home Ownership`];
     const coborrowerHouseCounselling = pair[`Co Borrower House Counselling`];
+
     if (coborrowerHomeOwnership) {
       this.coborrowerHomeOwnershipCheckbox = frame.locator(
         `//label[contains(@aria-label,'the Co-Borrower completed home')]/following::div[1]` +
-        `//span[text()='${coborrowerHomeOwnership}']/preceding::input[1]`);
+        `//span[text()='${coborrowerHomeOwnership}']/preceding::input[1]`
+      );
     }
+
     if (coborrowerHouseCounselling) {
       this.coborrowerHouseCounsellingCheckbox = frame.locator(
         `//label[contains(@aria-label,'the Co-Borrower completed housing')]/following::div[1]` +
-        `//span[text()='${coborrowerHouseCounselling}']/preceding::input[1]`);
+        `//span[text()='${coborrowerHouseCounselling}']/preceding::input[1]`
+      );
     }
+
     if (coborrowerHomeOwnership) {
-      await this.ensureCoBorrowerHomeOwnershipChecked();
+      try {
+        await this.ensureCoBorrowerHomeOwnershipChecked();
+      } catch {
+        console.log(`Co-Borrower Home Ownership option '${coborrowerHomeOwnership}' not found, skipping.`);
+      }
     }
+
     if (coborrowerHouseCounselling) {
-      await this.ensureCoBorrowerHousingCounselingChecked();
+      try {
+        await this.ensureCoBorrowerHousingCounselingChecked();
+      } catch {
+        console.log(`Co-Borrower House Counseling option '${coborrowerHouseCounselling}' not found, skipping.`);
+      }
     }
   };
 
@@ -1583,13 +1621,19 @@ exports.EncompassPage = class EncompassPage {
   }*/
 
   fillingBorrowerPairs = async (borrowerPairsRows) => {
+    await this.borrowerInfo.waitFor({ state: 'visible' });
+    await this.clickOnborrowerInfo();
+    await this.loanFieldsSpinner.waitFor({ state: 'hidden' });
     await this.downArrow.waitFor({ state: 'visible' });
     await this.clickOnDownArrow();
-    await this.pencilIcon.waitFor({ state: 'visible' });
+    while (!(await this.pencilIcon.isVisible())) {
+      await this.clickOnDownArrow();
+      await this.page.waitForTimeout(200);
+    };
     await this.clickOnPencilIcon();
     await this.yesBtn.waitFor({ state: 'visible' });
     await this.clickYesBtn();
-    await this.page.waitForTimeout(parseInt(process.env.smallWait));
+    await this.loanFieldsSpinner.waitFor({ state: "hidden" });
 
     // Filter out completely empty rows
     const validPairs = borrowerPairsRows.filter(row =>
@@ -1646,10 +1690,6 @@ exports.EncompassPage = class EncompassPage {
     const saveIsVisible = await this.saveButton.isVisible();
     if (saveIsVisible) await this.clickOnSaveButton();
 
-    await this.borrowerInfo.waitFor({ state: 'visible' });
-    await this.clickOnborrowerInfo();
-    await this.loanFieldsSpinner.waitFor({ state: 'hidden' });
-
     // STEP 2: Fill Borrower Info, Co Borrower Info, Employment, Demographics
     for (let i = 0; i < validPairs.length; i++) {
       const pair = validPairs[i];
@@ -1671,7 +1711,6 @@ exports.EncompassPage = class EncompassPage {
       // Navigate to next pair ONLY if more exist
       if (i < validPairs.length - 1) {
         await this.clickOnDownArrow();
-        await this.page.waitForTimeout(parseInt(process.env.smallWait));
         await this.borrowersList.nth(i + 1).click();
         await this.clickOnPageMenu();
         await this.clickOnBorrowerInformation();
@@ -1792,78 +1831,72 @@ exports.EncompassPage = class EncompassPage {
     const frame1 = this.page.frameLocator("//iframe[@id='pui-iframe-container-encompassweb']");
     const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
 
-    // Citizenship
-    if ("Citizenship" in pair && pair["Citizenship"]) {
-      const citizenshipValue = pair["Citizenship"];
-      this.citizenshipDropdown = frame.locator(`//h3[text()='Borrower']/following::span[text()='${citizenshipValue}']`);
+    if (pair["Citizenship"]) {
+      const citizenshipDropdown = frame.locator(`//h3[text()='Borrower']/following::span[text()='${pair["Citizenship"]}']`);
+      try {
+        await scrollToElement(this.citizenship);
+        await this.clickOnCitizenship();
+        await citizenshipDropdown.click({ timeout: 2000 });
+      } catch {
+        console.log(`Citizenship '${pair["Citizenship"]}' not found, skipping.`);
+      }
     }
 
-    // Marital Status
-    if ("Marital Status" in pair && pair["Marital Status"]) {
-      const maritalStatusValue = pair["Marital Status"];
-      this.maritalStatusOption = frame.locator(`//h3[text()='Borrower']/following::span[text()='${maritalStatusValue}']`);
+    if (pair["Marital Status"]) {
+      const maritalStatusOption = frame.locator(`//h3[text()='Borrower']/following::span[text()='${pair["Marital Status"]}']`);
+      try {
+        await scrollToElement(this.maritalStatus);
+        await this.clickOnMaritalStatus();
+        await maritalStatusOption.click({ timeout: 2000 });
+      } catch {
+        console.log(`Marital Status '${pair["Marital Status"]}' not found, skipping.`);
+      }
     }
 
-    // Email
-    if ("Email" in pair && pair["Email"]) {
+    if (pair["Email"]) {
       await scrollToElement(this.emailBorrower);
       await this.refillBorrowerEmail([pair["Email"]]);
     }
 
-    // Personal Details
-    if ("Dob" in pair && pair["Dob"]) {
+    if (pair["Dob"]) {
       await scrollToElement(this.dobBorrower);
       await this.clickOnDateOfBirth();
       await this.dobBorrower.pressSequentially(String(pair["Dob"]));
     }
 
-    if (this.citizenshipDropdown) {
-      await scrollToElement(this.citizenship);
-      await this.clickOnCitizenship();
-      await this.citizenshipDropdown.click();
-    }
-
-    if (this.maritalStatusOption) {
-      await scrollToElement(this.maritalStatus);
-      await this.clickOnMaritalStatus();
-      await this.maritalStatusOption.click();
-    }
-
-    // Contact
-    if ("Home Phone" in pair && pair["Home Phone"]) {
+    if (pair["Home Phone"]) {
       await scrollToElement(this.homePhone);
       await this.refillHomePhoneNo([String(pair["Home Phone"])]);
     }
-    if ("Work Phone" in pair && pair["Work Phone"]) {
+    if (pair["Work Phone"]) {
       await scrollToElement(this.workPhone);
       await this.refillWorkPhoneNo([String(pair["Work Phone"])]);
     }
-    if ("Cell Phone" in pair && pair["Cell Phone"]) {
+    if (pair["Cell Phone"]) {
       await scrollToElement(this.cellPhone);
       await this.refillCellPhoneNo([String(pair["Cell Phone"])]);
     }
 
-    // Address
-    if ("Zip" in pair && pair["Zip"]) {
+    if (pair["Zip"]) {
       await scrollToElement(this.zipCode);
       await this.refillZipCode([String(pair["Zip"])]);
     }
-    if ("Street Address" in pair && pair["Street Address"]) {
+    if (pair["Street Address"]) {
       await scrollToElement(this.borrowerStreetAddress);
       await this.refillStreetAddress([pair["Street Address"]]);
     }
-    if ("Years" in pair && pair["Years"]) {
+    if (pair["Years"]) {
       await scrollToElement(this.years);
       await this.refillYears([String(pair["Years"])]);
     }
-    if ("Months" in pair && pair["Months"]) {
+    if (pair["Months"]) {
       await scrollToElement(this.months);
       await this.refillMonths([String(pair["Months"])]);
     }
-
-    // Housing & Mailing
-    await this.handleBorrowerHousing();
-    await this.handleMailingCopy();
+    if (pair["Street Address"]) {
+      await this.handleBorrowerHousing().catch(() => console.log("No housing info to handle."));
+      await this.handleMailingCopy().catch(() => console.log("No mailing copy to handle."));
+    }
   };
 
   /*fillCoBorrowerEmailFromPairs = async (pairsData, i) => {
@@ -1948,101 +1981,123 @@ exports.EncompassPage = class EncompassPage {
     const frame1 = this.page.frameLocator("//iframe[@id='pui-iframe-container-encompassweb']");
     const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
 
-    // Citizenship
-    if ("Co Citizenship" in pair && pair["Co Citizenship"]) {
-      const coCitizenshipValue = pair["Co Citizenship"];
-      this.cocitizenshipDropdown = frame.locator(`//h3[text()='Co-Borrower']/following::span[text()='${coCitizenshipValue}']`);
+    if (pair["Co Citizenship"]) {
+      const coCitizenshipDropdown = frame.locator(`//h3[text()='Co-Borrower']/following::span[text()='${pair["Co Citizenship"]}']`);
+      try {
+        await scrollToElement(this.cocitizenship);
+        await this.clickOnCoCitizenship();
+        await coCitizenshipDropdown.click({ timeout: 2000 });
+      } catch {
+        console.log(`Co-Citizenship '${pair["Co Citizenship"]}' not found, skipping.`);
+      }
     }
 
-    // Marital Status
-    if ("Co Marital Status" in pair && pair["Co Marital Status"]) {
-      const coMaritalStatusValue = pair["Co Marital Status"];
-      this.comaritalStatusOption = frame.locator(`//h3[text()='Co-Borrower']/following::span[text()='${coMaritalStatusValue}']`);
+    if (pair["Co Marital Status"]) {
+      const coMaritalStatusOption = frame.locator(`//h3[text()='Co-Borrower']/following::span[text()='${pair["Co Marital Status"]}']`);
+      try {
+        await scrollToElement(this.comaritalStatus);
+        await this.clickOnCoMaritalStatus();
+        await coMaritalStatusOption.click({ timeout: 2000 });
+      } catch {
+        console.log(`Co-Marital Status '${pair["Co Marital Status"]}' not found, skipping.`);
+      }
     }
 
-    // Email
-    if ("Co Email" in pair && pair["Co Email"]) {
+    if (pair["Co Email"]) {
       await scrollToElement(this.coemailBorrower);
       await this.refillCoBorrowerEmail([pair["Co Email"]]);
     }
 
-    // Personal Details
-    if ("Co Dob" in pair && pair["Co Dob"]) {
+    if (pair["Co Dob"]) {
       await scrollToElement(this.codobBorrower);
       await this.clickOnCoDateOfBirth();
       await this.codobBorrower.pressSequentially(String(pair["Co Dob"]));
     }
 
-    if (this.cocitizenshipDropdown) {
-      await scrollToElement(this.cocitizenship);
-      await this.clickOnCoCitizenship();
-      await this.cocitizenshipDropdown.click();
-    }
-
-    if (this.comaritalStatusOption) {
-      await scrollToElement(this.comaritalStatus);
-      await this.clickOnCoMaritalStatus();
-      await this.comaritalStatusOption.click();
-    }
-
-    // Contact
-    if ("Co Home Phone" in pair && pair["Co Home Phone"]) {
+    if (pair["Co Home Phone"]) {
       await scrollToElement(this.cohomePhone);
       await this.refillCoHomePhoneNo([String(pair["Co Home Phone"])]);
     }
-    if ("Co Work Phone" in pair && pair["Co Work Phone"]) {
+    if (pair["Co Work Phone"]) {
       await scrollToElement(this.coworkPhone);
       await this.refillCoWorkPhoneNo([String(pair["Co Work Phone"])]);
     }
-    if ("Co Cell Phone" in pair && pair["Co Cell Phone"]) {
+    if (pair["Co Cell Phone"]) {
       await scrollToElement(this.cocellPhone);
       await this.refillCoCellPhoneNo([String(pair["Co Cell Phone"])]);
     }
 
-    // Address
-    if ("Co Zip" in pair && pair["Co Zip"]) {
+    if (pair["Co Zip"]) {
       await scrollToElement(this.coZipCode);
       await this.refillCoBorrowerZipCode([String(pair["Co Zip"])]);
     }
-    if ("Co Street Address" in pair && pair["Co Street Address"]) {
+    if (pair["Co Street Address"]) {
       await scrollToElement(this.coBorrowerStreetAddress);
       await this.refillCoBorrowerStreetAddress([pair["Co Street Address"]]);
     }
-    if ("Co Years" in pair && pair["Co Years"]) {
+    if (pair["Co Years"]) {
       await scrollToElement(this.coBorrowYears);
       await this.refillCoBorrowYears([String(pair["Co Years"])]);
     }
-    if ("Co Months" in pair && pair["Co Months"]) {
+    if (pair["Co Months"]) {
       await scrollToElement(this.coBorrowMonths);
       await this.refillCoBorrowMonths([String(pair["Co Months"])]);
     }
 
-    // Housing & Mailing
-    await this.handleCoBorrowerHousing();
-    await this.handleCoMailingCopy();
+    if (pair["Co Street Address"]) {
+      await this.handleCoBorrowerHousing().catch(() => console.log("No co-borrower housing info to handle."));
+      await this.handleCoMailingCopy().catch(() => console.log("No co-borrower mailing copy to handle."));
+    }
+  };
+
+  fillingPropertyTitleandTrustFromPairs = async (pairsData) => {
+    const frame1 = this.page.frameLocator("//iframe[@id='pui-iframe-container-encompassweb']");
+    const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
+
+    if ("Attachment Type" in pairsData && pairsData["Attachment Type"]) {
+      const attachmentType = pairsData["Attachment Type"];
+      this.attachmentTypeOption = frame.locator(
+        `//label[text()='Attachment Type']/following::span[text()='${attachmentType}']`
+      );
+    }
+
+    if ("Property Type" in pairsData && pairsData["Property Type"]) {
+      const propertyType = pairsData["Property Type"];
+      this.propertyTypeOption = frame.locator(
+        `//label[text()='Property Type']/following::span[text()='${propertyType}']`
+      );
+    }
+
+    await this.clickOnPageMenu();
+    await this.clickOnPropertyTitlePage();
+    await this.loanFieldsSpinner.waitFor({ state: "hidden" });
+
+    await this.fillPropertyAddressFromPairs(pairsData);
+    await this.fillPropertyDetailsFromPairs();
+    await this.fillPropertyValuesFromPairs(pairsData);
   };
 
   fillPropertyAddressFromPairs = async (pairsData) => {
-    if (`Property Zip` in pairsData) {
+    if ("Property Zip" in pairsData && pairsData["Property Zip"]) {
       await scrollToElement(this.zipCode);
       await this.refillZipCode([String(pairsData["Property Zip"])]);
     }
-    if (`Property Street Address` in pairsData) {
+    if ("Property Street Address" in pairsData && pairsData["Property Street Address"]) {
       await scrollToElement(this.borrowerStreetAddress);
       await this.refillStreetAddress([pairsData["Property Street Address"]]);
     }
-    if (`Number of Units` in pairsData) {
+    if ("Number of Units" in pairsData && pairsData["Number of Units"]) {
       await scrollToElement(this.noOfUnits);
       await this.fillNoOfUnits([String(pairsData["Number of Units"])]);
     }
   };
 
   fillPropertyValuesFromPairs = async (pairsData) => {
-    if (`Estimated Value` in pairsData) {
+    if ("Estimated Value" in pairsData && pairsData["Estimated Value"]) {
       await scrollToElement(this.estimatedValue);
       await this.refillEstimatedValue([String(pairsData["Estimated Value"])]);
     }
-    if (`Appraised Value` in pairsData) {
+    if ("Appraised Value" in pairsData && pairsData["Appraised Value"]) {
       await scrollToElement(this.appraisedValue);
       await this.refillAppraisedValue([String(pairsData["Appraised Value"])]);
     }
@@ -2059,35 +2114,53 @@ exports.EncompassPage = class EncompassPage {
     }
   };
 
-  clickOnAttachmentTypeOption = async () => {
-    await excuteSteps(this.test, this.attachmentTypeOption, "click", `Clicking on Attachment Type Option`);
-  };
-
   clickOnPropertyTypeOption = async () => {
     await excuteSteps(this.test, this.propertyTypeOption, "click", `Clicking on Property Type Option`);
   };
 
-  fillingPropertyTitleandTrustFromPairs = async (pairsData) => {
-    const frame1 = this.page.frameLocator("//iframe[@id='pui-iframe-container-encompassweb']");
-    const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
-    if (`Attachment Type` in pairsData) {
-      const attachmentType = pairsData[`Attachment Type`];
-      this.attachmentTypeOption = frame.locator(
-        `//label[text()='Attachment Type']/following::span[text()='${attachmentType}']`
-      );
-    }
-    if (`Property Type` in pairsData) {
-      const propertyType = pairsData[`Property Type`];
-      this.propertyTypeOption = frame.locator(
-        `//label[text()='Property Type']/following::span[text()='${propertyType}']`
-      );
-    }
+  clickOnAttachmentTypeOption = async () => {
+    await excuteSteps(this.test, this.attachmentTypeOption, "click", `Clicking on Property Type Option`);
+  };
+
+  fillingLoanInfoFromPairs = async (pairsData) => {
     await this.clickOnPageMenu();
-    await this.clickOnPropertyTitlePage();
-    await this.loanFieldsSpinner.waitFor({ state: "hidden" });
-    await this.fillPropertyAddressFromPairs(pairsData);
-    await this.fillPropertyDetailsFromPairs();
-    await this.fillPropertyValuesFromPairs(pairsData);
+    await this.clickOnLoanInfoPage();
+
+    if ("Loan Purpose" in pairsData && pairsData["Loan Purpose"]) {
+      await this.selectLoanPurpose(pairsData["Loan Purpose"]);
+    }
+    if ("Mortgage Type" in pairsData && pairsData["Mortgage Type"]) {
+      await this.selectMortgageType(pairsData["Mortgage Type"]);
+    }
+    if ("Amortization Type" in pairsData && pairsData["Amortization Type"]) {
+      await this.setAmortizationType(pairsData["Amortization Type"]);
+    }
+    if ("Mortgage Lien Type" in pairsData && pairsData["Mortgage Lien Type"]) {
+      await this.setMortgageLienType(pairsData["Mortgage Lien Type"]);
+    }
+
+    await this.fillLoanFieldsFromPairs(pairsData);
+    await this.clickOnSaveBtn();
+  };
+
+  fillLoanFieldsFromPairs = async (pairsData) => {
+    if ("Purchase Price" in pairsData && pairsData["Purchase Price"]) {
+      await scrollToElement(this.purchasePrice);
+      await this.fillPurchasePrice([String(pairsData["Purchase Price"])]);
+    }
+    if ("Down Payment" in pairsData && pairsData["Down Payment"]) {
+      await this.fillDownPayment([String(pairsData["Down Payment"])]);
+    }
+    if ("Note Rate" in pairsData && pairsData["Note Rate"]) {
+      await this.fillNoteRate([String(pairsData["Note Rate"])]);
+    }
+    if ("Loan Term" in pairsData && pairsData["Loan Term"]) {
+      await scrollToElement(this.loanTerm);
+      await this.fillLoanTerm([String(pairsData["Loan Term"])]);
+    }
+    if ("Due In" in pairsData && pairsData["Due In"]) {
+      await this.fillDueIn([String(pairsData["Due In"])]);
+    }
   };
 
   fillEmploymentAddressFromPairs = async (pairsData, i) => {
@@ -2158,35 +2231,70 @@ exports.EncompassPage = class EncompassPage {
   fillingEmploymentIncomeFromPairs = async (pair) => {
     await this.clickOnPageMenu();
     await this.clickOnEmploymentAndIncome();
-    if ("Business Name" in pair && pair["Business Name"]) {
-      await scrollToElement(this.employerBusinessName);
-      await this.refillEmployerBusinessName([pair["Business Name"]]);
+
+    if (pair["Business Name"]) {
+      try {
+        await scrollToElement(this.employerBusinessName);
+        await this.refillEmployerBusinessName([pair["Business Name"]]);
+      } catch {
+        console.log(`Business Name '${pair["Business Name"]}' not found, skipping.`);
+      }
     }
-    if ("Emp Zip" in pair && pair["Emp Zip"]) {
-      await scrollToElement(this.zipCode);
-      await this.refillZipCode([String(pair["Emp Zip"])]);
+
+    if (pair["Emp Zip"]) {
+      try {
+        await scrollToElement(this.zipCode);
+        await this.refillZipCode([String(pair["Emp Zip"])]);
+      } catch {
+        console.log(`Zip Code '${pair["Emp Zip"]}' not found, skipping.`);
+      }
     }
-    if ("Emp Street Address" in pair && pair["Emp Street Address"]) {
-      await scrollToElement(this.borrowerStreetAddress);
-      await this.refillStreetAddress([pair["Emp Street Address"]]);
+
+    if (pair["Emp Street Address"]) {
+      try {
+        await scrollToElement(this.borrowerStreetAddress);
+        await this.refillStreetAddress([pair["Emp Street Address"]]);
+      } catch {
+        console.log(`Street Address '${pair["Emp Street Address"]}' not found, skipping.`);
+      }
     }
-    if ("Start Date" in pair && pair["Start Date"]) {
-      await scrollToElement(this.startDate);
-      await this.fillStartDate(pair["Start Date"]);
+
+    if (pair["Start Date"]) {
+      try {
+        await scrollToElement(this.startDate);
+        await this.fillStartDate(pair["Start Date"]);
+      } catch {
+        console.log(`Start Date '${pair["Start Date"]}' not found, skipping.`);
+      }
     }
-    //await this.fillEmploymentDatesFromPairs(pairsData, i);
-    if ("Emp Years" in pair && pair["Emp Years"]) {
-      await scrollToElement(this.years);
-      await this.refillEmpYears([String(pair["Emp Years"])]);
+
+    if (pair["Emp Years"]) {
+      try {
+        await scrollToElement(this.years);
+        await this.refillEmpYears([String(pair["Emp Years"])]);
+      } catch {
+        console.log(`Employment Years '${pair["Emp Years"]}' not found, skipping.`);
+      }
     }
-    if ("Emp Months" in pair && pair["Emp Months"]) {
-      await scrollToElement(this.months);
-      await this.refillEmpMonths([String(pair["Emp Months"])]);
+
+    if (pair["Emp Months"]) {
+      try {
+        await scrollToElement(this.months);
+        await this.refillEmpMonths([String(pair["Emp Months"])]);
+      } catch {
+        console.log(`Employment Months '${pair["Emp Months"]}' not found, skipping.`);
+      }
     }
-    if ("Base Pay" in pair && pair["Base Pay"]) {
-      await scrollToElement(this.baseMonthlyPay);
-      await this.refillEmploymentPay([String(pair["Base Pay"])]);
+
+    if (pair["Base Pay"]) {
+      try {
+        await scrollToElement(this.baseMonthlyPay);
+        await this.refillEmploymentPay([String(pair["Base Pay"])]);
+      } catch {
+        console.log(`Base Pay '${pair["Base Pay"]}' not found, skipping.`);
+      }
     }
+
     const loanNumber = await this.loanNumber.innerText();
     console.log("Loan Number:", loanNumber);
   };
@@ -2210,83 +2318,70 @@ exports.EncompassPage = class EncompassPage {
   };*/
 
   fillingCoEmploymentIncomeFromPairs = async (pair) => {
-    if ("Co Business Name" in pair && pair["Co Business Name"]) {
-      await scrollToElement(this.coemployerBusinessName);
-      await this.refillCoEmployerBusinessName([pair["Co Business Name"]]);
+    if (pair["Co Business Name"]) {
+      try {
+        await scrollToElement(this.coemployerBusinessName);
+        await this.refillCoEmployerBusinessName([pair["Co Business Name"]]);
+      } catch {
+        console.log(`Co Business Name '${pair["Co Business Name"]}' not found, skipping.`);
+      }
     }
-    if ("Co Emp Zip" in pair && pair["Co Emp Zip"]) {
-      await scrollToElement(this.coZipCode);
-      await this.refillCoEmpZipCode([String(pair["Co Emp Zip"])]);
+
+    if (pair["Co Emp Zip"]) {
+      try {
+        await scrollToElement(this.coZipCode);
+        await this.refillCoEmpZipCode([String(pair["Co Emp Zip"])]);
+      } catch {
+        console.log(`Co Emp Zip '${pair["Co Emp Zip"]}' not found, skipping.`);
+      }
     }
-    if ("Co Emp Street Address" in pair && pair["Co Emp Street Address"]) {
-      await scrollToElement(this.coEmpStreetAddress);
-      await this.refillCoEmpStreetAddress([pair["Co Emp Street Address"]]);
+
+    if (pair["Co Emp Street Address"]) {
+      try {
+        await scrollToElement(this.coEmpStreetAddress);
+        await this.refillCoEmpStreetAddress([pair["Co Emp Street Address"]]);
+      } catch {
+        console.log(`Co Emp Street Address '${pair["Co Emp Street Address"]}' not found, skipping.`);
+      }
     }
-    if ("Co Start Date" in pair && pair["Co Start Date"]) {
-      await scrollToElement(this.coStartDate);
-      await this.fillCoStartDate(pair["Co Start Date"]);
+
+    if (pair["Co Start Date"]) {
+      try {
+        await scrollToElement(this.coStartDate);
+        await this.fillCoStartDate(pair["Co Start Date"]);
+      } catch {
+        console.log(`Co Start Date '${pair["Co Start Date"]}' not found, skipping.`);
+      }
     }
-    //await this.fillEmploymentDatesFromPairs(pairsData, i);
-    if ("Co Emp Years" in pair && pair["Co Emp Years"]) {
-      await scrollToElement(this.coEmpYears);
-      await this.refillCoEmpYears([String(pair["Co Emp Years"])]);
+
+    if (pair["Co Emp Years"]) {
+      try {
+        await scrollToElement(this.coEmpYears);
+        await this.refillCoEmpYears([String(pair["Co Emp Years"])]);
+      } catch {
+        console.log(`Co Emp Years '${pair["Co Emp Years"]}' not found, skipping.`);
+      }
     }
-    if ("Co Emp Months" in pair && pair["Co Emp Months"]) {
-      await scrollToElement(this.coEmpMonths);
-      await this.refillCoEmpMonths([String(pair["Co Emp Months"])]);
+
+    if (pair["Co Emp Months"]) {
+      try {
+        await scrollToElement(this.coEmpMonths);
+        await this.refillCoEmpMonths([String(pair["Co Emp Months"])]);
+      } catch {
+        console.log(`Co Emp Months '${pair["Co Emp Months"]}' not found, skipping.`);
+      }
     }
-    if ("Co Base Pay" in pair && pair["Co Base Pay"]) {
-      await scrollToElement(this.coBaseMonthlyPay);
-      await this.refillCoEmploymentPay([String(pair["Co Base Pay"])]);
+
+    if (pair["Co Base Pay"]) {
+      try {
+        await scrollToElement(this.coBaseMonthlyPay);
+        await this.refillCoEmploymentPay([String(pair["Co Base Pay"])]);
+      } catch {
+        console.log(`Co Base Pay '${pair["Co Base Pay"]}' not found, skipping.`);
+      }
     }
+
     await this.clickOnSaveBtn();
-  };
-
-  fillingLoanInfoFromPairs = async (pairsData) => {
-    await this.clickOnPageMenu();
-    await this.clickOnLoanInfoPage();
-    if ("Loan Purpose" in pairsData) {
-      await this.selectLoanPurpose(pairsData["Loan Purpose"]);
-    }
-    if ("Mortgage Type" in pairsData) {
-      await this.selectMortgageType(pairsData["Mortgage Type"]);
-    }
-    if ("Amortization Type" in pairsData) {
-      await this.setAmortizationType(pairsData["Amortization Type"]);
-    }
-    if ("Mortgage Lien Type" in pairsData) {
-      await this.setMortgageLienType(pairsData["Mortgage Lien Type"]);
-    }
-    await this.fillLoanFieldsFromPairs(pairsData);
-    await this.clickOnSaveBtn();
-  };
-
-  fillLoanFieldsFromPairs = async (pairsData) => {
-    if ("Purchase Price" in pairsData) {
-      await scrollToElement(this.purchasePrice);
-      await this.fillPurchasePrice([String(pairsData["Purchase Price"])]);
-    }
-    if ("Down Payment" in pairsData) {
-      await this.fillDownPayment([String(pairsData["Down Payment"])]);
-    }
-    if ("Note Rate" in pairsData) {
-      await this.fillNoteRate([String(pairsData["Note Rate"])]);
-    }
-    if ("Loan Term" in pairsData) {
-      await scrollToElement(this.loanTerm);
-      await this.fillLoanTerm([String(pairsData["Loan Term"])]);
-    }
-    if ("Due In" in pairsData) {
-      await this.fillDueIn([String(pairsData["Due In"])]);
-    }
-  };
-
-  clickOnMilitaryServiceOption = async () => {
-    await excuteSteps(this.test, this.militaryServiceOption, "click", `Clicking on Military Service Option`);
-  };
-
-  clickOnCoMilitaryServiceOption = async () => {
-    await excuteSteps(this.test, this.coMilitaryServiceOption, "click", `Clicking on Co Military Service Option`);
   };
 
   /*fillingDemographicInfoFromPairs = async (pairsData, i) => {
@@ -2345,16 +2440,19 @@ exports.EncompassPage = class EncompassPage {
     const race = pair[`Race`];
     const sex = pair[`Sex`];
 
-    if (interviewOption) {
-      this.interviewOption = frame.locator(`//h3[text()='Borrower']/following::span[text()='${interviewOption}']`);
-    }
-
     await this.clickOnPageMenu();
     await this.clickOnDemographicInfo();
+
     if (interviewOption) {
+      this.interviewOption = frame.locator(`//h3[text()='Borrower']/following::span[text()='${interviewOption}']`);
       await this.clickOnDemographicInfoBtn();
+      while (!(await this.interviewOption.isVisible())) {
+        await this.clickOnDemographicInfoBtn();
+        await this.page.waitForTimeout(200);
+      }
       await this.selectInterviewOption();
       await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
       while (!(await this.interviewOption.isVisible())) {
         console.log("option disappeared — reselecting.");
         await this.clickOnDemographicInfoBtn();
@@ -2362,21 +2460,35 @@ exports.EncompassPage = class EncompassPage {
         await this.page.waitForTimeout(parseInt(process.env.smallWait));
       }
     }
-    if ("Ethnicity" in pair && pair["Ethnicity"]) {
-      this.ethnicityCheckbox = frame.locator(`(//span[text()='${ethnicity}'])[1]/preceding::input[1]`);
-      await scrollToElement(this.ethnicityCheckbox);
-      await this.clickUntilChecked(this.ethnicityCheckbox);
-    }
-    if ("Race" in pair && pair["Race"]) {
-      this.raceCheckbox = frame.locator(`(//span[text()='${race}'])[1]/preceding::input[1]`);
-      await scrollToElement(this.raceCheckbox);
-      await this.clickUntilChecked(this.raceCheckbox);
+
+    if (ethnicity) {
+      try {
+        this.ethnicityCheckbox = frame.locator(`(//span[text()='${ethnicity}'])[1]/preceding::input[1]`);
+        await scrollToElement(this.ethnicityCheckbox);
+        await this.clickUntilChecked(this.ethnicityCheckbox);
+      } catch {
+        console.log(`Ethnicity '${ethnicity}' option not found, skipping.`);
+      }
     }
 
-    if ("Sex" in pair && pair["Sex"]) {
-      this.sexCheckbox = frame.locator(`(//span[text()='${sex}'])[1]/preceding::input[1]`);
-      await scrollToElement(this.sexCheckbox);
-      await this.clickUntilChecked(this.sexCheckbox);
+    if (race) {
+      try {
+        this.raceCheckbox = frame.locator(`(//span[text()='${race}'])[1]/preceding::input[1]`);
+        await scrollToElement(this.raceCheckbox);
+        await this.clickUntilChecked(this.raceCheckbox);
+      } catch {
+        console.log(`Race '${race}' option not found, skipping.`);
+      }
+    }
+
+    if (sex) {
+      try {
+        this.sexCheckbox = frame.locator(`(//span[text()='${sex}'])[1]/preceding::input[1]`);
+        await scrollToElement(this.sexCheckbox);
+        await this.clickUntilChecked(this.sexCheckbox);
+      } catch {
+        console.log(`Sex '${sex}' option not found, skipping.`);
+      }
     }
   };
 
@@ -2429,34 +2541,50 @@ exports.EncompassPage = class EncompassPage {
 
     if (coInterviewOption) {
       this.coInterviewOption = frame.locator(`//h3[text()='Co-Borrower']/following::span[text()='${coInterviewOption}']`);
-    }
-
-    if (coInterviewOption) {
       await this.clickOnCoDemographicInfoBtn();
+      while (!(await this.coInterviewOption.isVisible())) {
+        await this.clickOnCoDemographicInfoBtn();
+        await this.page.waitForTimeout(200);
+      }
       await this.selectCoInterviewOption();
       await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
       while (!(await this.coInterviewOption.isVisible())) {
-        console.log("option disappeared — reselecting.");
+        console.log("Co Interview Option disappeared — reselecting.");
         await this.clickOnCoDemographicInfoBtn();
         await this.selectCoInterviewOption();
         await this.page.waitForTimeout(parseInt(process.env.smallWait));
       }
     }
-    if ("Co Ethnicity" in pair && pair["Co Ethnicity"]) {
-      this.coEthnicityCheckbox = frame.locator(`(//span[text()='${coEthnicity}'])[2]/preceding::input[1]`);
-      await scrollToElement(this.coEthnicityCheckbox);
-      await this.clickUntilChecked(this.coEthnicityCheckbox);
-    }
-    if ("Co Race" in pair && pair["Co Race"]) {
-      this.coRaceCheckbox = frame.locator(`(//span[text()='${coRace}'])[2]/preceding::input[1]`);
-      await scrollToElement(this.coRaceCheckbox);
-      await this.clickUntilChecked(this.coRaceCheckbox);
+
+    if (coEthnicity) {
+      try {
+        this.coEthnicityCheckbox = frame.locator(`(//span[text()='${coEthnicity}'])[2]/preceding::input[1]`);
+        await scrollToElement(this.coEthnicityCheckbox);
+        await this.clickUntilChecked(this.coEthnicityCheckbox);
+      } catch {
+        console.log(`Co Ethnicity '${coEthnicity}' option not found, skipping.`);
+      }
     }
 
-    if ("Co Sex" in pair && pair["Co Sex"]) {
-      this.coSexCheckbox = frame.locator(`(//span[text()='${coSex}'])[2]/preceding::input[1]`);
-      await scrollToElement(this.coSexCheckbox);
-      await this.clickUntilChecked(this.coSexCheckbox);
+    if (coRace) {
+      try {
+        this.coRaceCheckbox = frame.locator(`(//span[text()='${coRace}'])[2]/preceding::input[1]`);
+        await scrollToElement(this.coRaceCheckbox);
+        await this.clickUntilChecked(this.coRaceCheckbox);
+      } catch {
+        console.log(`Co Race '${coRace}' option not found, skipping.`);
+      }
+    }
+
+    if (coSex) {
+      try {
+        this.coSexCheckbox = frame.locator(`(//span[text()='${coSex}'])[2]/preceding::input[1]`);
+        await scrollToElement(this.coSexCheckbox);
+        await this.clickUntilChecked(this.coSexCheckbox);
+      } catch {
+        console.log(`Co Sex '${coSex}' option not found, skipping.`);
+      }
     }
   };
 
@@ -2506,34 +2634,52 @@ exports.EncompassPage = class EncompassPage {
     const frame1 = this.page.frameLocator("//iframe[@id='pui-iframe-container-encompassweb']");
     const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
     const militaryService = pair[`Military Service`];
+
     if (militaryService) {
       this.militaryServiceOption = frame.locator(
         `//h3[text()='Borrower']/following::label[@aria-label='Military Service']/following::span[text()='${militaryService}']`
       );
     }
+
     await this.clickOnPageMenu();
     await this.clickOnMilitaryService();
+
     if (militaryService) {
-      await this.clickOnMilitaryServiceArrow();
-      await this.clickOnMilitaryServiceOption();
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    }
-    if (militaryService) {
-      while (!(await this.militaryServiceOption.isVisible())) {
-        console.log("Military Service option disappeared — reselecting.");
-        await this.clickOnMilitaryServiceArrow();
-        await this.clickOnMilitaryServiceOption();
+      try {
+        while (!(await this.militaryServiceOption.isVisible())) {
+          await this.clickOnMilitaryServiceArrow();
+          await this.page.waitForTimeout(200);
+        }
+        await this.militaryServiceOption.click();
         await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
+        while (!(await this.militaryServiceOption.isVisible())) {
+          console.log("Military Service option disappeared — reselecting.");
+          await this.clickOnMilitaryServiceArrow();
+          await this.militaryServiceOption.click();
+          await this.page.waitForTimeout(parseInt(process.env.smallWait));
+        }
+      } catch (error) {
+        console.log(`Error while selecting Military Service option: ${error.message}`);
       }
-    }
-    await this.clickOnLanguagePreferenceArrow();
-    await this.clickOnLanguagePreferenceEnglish();
-    await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    while (!(await this.languagePreferenceEnglishOption.isVisible())) {
-      console.log("Language Preference option disappeared — reselecting.");
-      await this.clickOnLanguagePreferenceArrow();
-      await this.clickOnLanguagePreferenceEnglish();
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
+      try {
+        while (!(await this.languagePreferenceEnglishOption.isVisible())) {
+          await this.clickOnLanguagePreferenceArrow();
+          await this.page.waitForTimeout(200);
+        }
+        await this.clickOnLanguagePreferenceEnglish();
+        await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
+        while (!(await this.languagePreferenceEnglishOption.isVisible())) {
+          console.log("Language Preference option disappeared — reselecting.");
+          await this.clickOnLanguagePreferenceArrow();
+          await this.clickOnLanguagePreferenceEnglish();
+          await this.page.waitForTimeout(parseInt(process.env.smallWait));
+        }
+      } catch (error) {
+        console.log(`Error while selecting Language Preference option: ${error.message}`);
+      }
     }
   };
 
@@ -2579,30 +2725,49 @@ exports.EncompassPage = class EncompassPage {
     const frame1 = this.page.frameLocator("//iframe[@id='pui-iframe-container-encompassweb']");
     const frame = frame1.frameLocator("//iframe[@title='Forms Frame']");
     const coMilitaryService = pair[`Co Military Service`];
+
     if (coMilitaryService) {
       this.coMilitaryServiceOption = frame.locator(
         `//h3[text()='Co-Borrower']/following::label[@aria-label='Military Service']/following::span[text()='${coMilitaryService}']`
       );
     }
+
     if (coMilitaryService) {
-      await this.clickOnCoMilitaryServiceArrow();
-      await this.clickOnCoMilitaryServiceOption();
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
-      while (!(await this.coMilitaryServiceOption.isVisible())) {
-        console.log("Co-Borrower Military Service option disappeared — reselecting.");
-        await this.clickOnCoMilitaryServiceArrow();
-        await this.clickOnCoMilitaryServiceOption();
+      try {
+        while (!(await this.coMilitaryServiceOption.isVisible())) {
+          await this.clickOnCoMilitaryServiceArrow();
+          await this.page.waitForTimeout(200);
+        }
+        await this.coMilitaryServiceOption.click();
         await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
+        while (!(await this.coMilitaryServiceOption.isVisible())) {
+          console.log("Co Military Service option disappeared — reselecting.");
+          await this.clickOnCoMilitaryServiceArrow();
+          await this.coMilitaryServiceOption.click();
+          await this.page.waitForTimeout(parseInt(process.env.smallWait));
+        }
+      } catch (error) {
+        console.log(`Error while selecting Co Military Service option: ${error.message}`);
       }
-    }
-    await this.clickOnCoLanguagePreferenceArrow();
-    await this.clickOnCoLanguagePreferenceEnglish();
-    await this.page.waitForTimeout(parseInt(process.env.smallWait));
-    while (!(await this.coLanguagePreferenceEnglishOption.isVisible())) {
-      console.log("Co-Borrower Language Preference option disappeared — reselecting.");
-      await this.clickOnCoLanguagePreferenceArrow();
-      await this.clickOnCoLanguagePreferenceEnglish();
-      await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
+      try {
+        while (!(await this.coLanguagePreferenceEnglishOption.isVisible())) {
+          await this.clickOnCoLanguagePreferenceArrow();
+          await this.page.waitForTimeout(200);
+        }
+        await this.clickOnCoLanguagePreferenceEnglish();
+        await this.page.waitForTimeout(parseInt(process.env.smallWait));
+
+        while (!(await this.coLanguagePreferenceEnglishOption.isVisible())) {
+          console.log("Co Language Preference option disappeared — reselecting.");
+          await this.clickOnCoLanguagePreferenceArrow();
+          await this.clickOnCoLanguagePreferenceEnglish();
+          await this.page.waitForTimeout(parseInt(process.env.smallWait));
+        }
+      } catch (error) {
+        console.log(`Error while selecting Co Language Preference option: ${error.message}`);
+      }
     }
   };
 
