@@ -1,0 +1,6 @@
+STARTING LOAN 1
+Borrower Pairs found for Loan 1: 8
+Total borrower pairs to fill: 2
+Filling Borrower Pair 1
+Filling Borrower Pair 2
+Filling detailed info for Borrower Pair 1

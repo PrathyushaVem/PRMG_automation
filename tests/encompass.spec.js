@@ -50,7 +50,7 @@ function getBorrowerPairsForLoan(borrowerPairsSheet, loanNumber) {
 }
 
 test.only("New loan creation using Borrower Pairs", async ({ page, context }) => {
-    const excelData = readExcel("./test_Data/NewLoan.xlsx");
+    const excelData = readExcel("./test_Data/NewLoan.xlsm");
     const loansSheet = excelData["Loans"];
     const borrowerPairsSheet = excelData["Borrower Pairs"];
 
