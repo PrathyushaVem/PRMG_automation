@@ -1637,19 +1637,20 @@ exports.EncompassPage = class EncompassPage {
 
     // Filter out completely empty rows
     const validPairs = borrowerPairsRows.filter(row =>
-      Object.keys(row).some(key => key.includes("First Name") || key.includes("Co First Name"))
+      Object.keys(row).some(key => key.includes("First Name"))
     );
-
     console.log(`Total borrower pairs to fill: ${validPairs.length}`);
+    if (validPairs.length === 0) {
+      console.warn("No valid borrower pairs found. Skipping Borrower Pairs section.");
+      return;
+    }
 
     // STEP 1: Fill Borrower Pairs List
     for (let i = 0; i < validPairs.length; i++) {
       const pair = validPairs[i];
       const pairNumber = i + 1;
-
       console.log(`Filling Borrower Pair ${pairNumber}`);
 
-      // Borrower
       if (pair[`Vesting Type`])
         await this.clickOnVestingType().then(() => this.selectVestingType(pair[`Vesting Type`]));
 
@@ -1663,7 +1664,6 @@ exports.EncompassPage = class EncompassPage {
         await this.ssnId.pressSequentially(String(pair[`SSN`]));
       }
 
-      // Co-Borrower
       if (pair[`Co Vesting Type`])
         await this.clickOnCoVestingType().then(() => this.selectCoVestingType(pair[`Co Vesting Type`]));
 
@@ -1677,26 +1677,20 @@ exports.EncompassPage = class EncompassPage {
         await this.coSsnId.pressSequentially(String(pair[`Co SSN`]));
       }
 
-      // Add new pair except for last
       if (pairNumber < validPairs.length) {
         await scrollToElement(this.newPair);
         await this.addNewPair();
       }
     }
 
-    // Next + Save
     await this.clickOnNextButton();
-
     const saveIsVisible = await this.saveButton.isVisible();
     if (saveIsVisible) await this.clickOnSaveButton();
 
-    // STEP 2: Fill Borrower Info, Co Borrower Info, Employment, Demographics
     for (let i = 0; i < validPairs.length; i++) {
       const pair = validPairs[i];
       const pairNumber = i + 1;
-
       console.log(`Filling detailed info for Borrower Pair ${pairNumber}`);
-
       await this.fillingBorrowerInfoFromPairs(pair);
       await this.fillingCoBorrowerInfoFromPairs(pair);
       await this.fillingEmploymentIncomeFromPairs(pair);
@@ -1708,7 +1702,6 @@ exports.EncompassPage = class EncompassPage {
       await this.fillMilitaryServiceLanguagePreferenceFromPairs(pair);
       await this.fillCoMilitaryServiceLanguagePreferenceFromPairs(pair);
 
-      // Navigate to next pair ONLY if more exist
       if (i < validPairs.length - 1) {
         await this.clickOnDownArrow();
         await this.borrowersList.nth(i + 1).click();

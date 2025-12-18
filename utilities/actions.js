@@ -8,7 +8,7 @@ exports.excuteSteps = async (test, element, action, description, data = [], page
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
           try {
             await fillFunc(value);
-            await page.waitForTimeout(parseInt(process.env.smallWait));
+            await page.waitForTimeout(parseInt(process.env.mediumWait));
             let currentValue = '';
             if (locator.inputValue) currentValue = (await locator.inputValue())?.trim() || '';
             if (!currentValue && locator.innerText) currentValue = (await locator.innerText())?.trim() || '';

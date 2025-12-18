@@ -1,6 +1,8 @@
 const { test } = require("@playwright/test");
 const sections = require("../pageObjects/UI_Pages/pageIndex");
 const { readExcel } = require("../utilities/readExcel");
+const { getBorrowerPairsForLoan } = require("../utilities/borrowerPairs");
+
 require("dotenv").config();
 
 /*test("New loan creation using borrower Pairs", async ({ page, context }) => {
@@ -34,21 +36,6 @@ require("dotenv").config();
     };
 })*/
 
-// Utility to get Number of borrower pairs for a loan
-function getBorrowerPairsForLoan(borrowerPairsSheet, loanNumber) {
-    let currentLoan = null;
-    const result = [];
-    for (const row of borrowerPairsSheet) {
-        if (row["Loan Number"]) {
-            currentLoan = row["Loan Number"];
-        }
-        if (currentLoan === loanNumber) {
-            result.push(row);
-        }
-    }
-    return result;
-}
-
 test.only("New loan creation using Borrower Pairs", async ({ page, context }) => {
     const excelData = readExcel("./test_Data/NewLoan.xlsm");
     const loansSheet = excelData["Loans"];
@@ -75,7 +62,7 @@ test.only("New loan creation using Borrower Pairs", async ({ page, context }) =>
         const loanData = loansSheet[i];
         const loanNumber = loanData["Loan Number"];
         console.log(`STARTING LOAN ${loanNumber}`);
-        const borrowerPairs = getBorrowerPairsForLoan(borrowerPairsSheet, loanNumber);
+        const borrowerPairs = await getBorrowerPairsForLoan(borrowerPairsSheet, loanNumber);
         console.log(`Borrower Pairs found for Loan ${loanNumber}:`, borrowerPairs.length);
         if (borrowerPairs.length > 0) {
             await encompassPage.fillingBorrowerPairs(borrowerPairs);
