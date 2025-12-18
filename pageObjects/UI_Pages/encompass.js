@@ -1621,6 +1621,15 @@ exports.EncompassPage = class EncompassPage {
   }*/
 
   fillingBorrowerPairs = async (borrowerPairsRows) => {
+    // Filter out completely empty rows
+    const validPairs = borrowerPairsRows.filter(row =>
+      Object.keys(row).some(key => key.includes("First Name"))
+    );
+    console.log(`Total borrower pairs to fill: ${validPairs.length}`);
+    if (validPairs.length === 0) {
+      console.warn("No valid borrower pairs found. Skipping Borrower Pairs section.");
+      return;
+    }
     await this.borrowerInfo.waitFor({ state: 'visible' });
     await this.clickOnborrowerInfo();
     await this.loanFieldsSpinner.waitFor({ state: 'hidden' });
@@ -1635,17 +1644,6 @@ exports.EncompassPage = class EncompassPage {
     await this.clickYesBtn();
     await this.loanFieldsSpinner.waitFor({ state: "hidden" });
 
-    // Filter out completely empty rows
-    const validPairs = borrowerPairsRows.filter(row =>
-      Object.keys(row).some(key => key.includes("First Name"))
-    );
-    console.log(`Total borrower pairs to fill: ${validPairs.length}`);
-    if (validPairs.length === 0) {
-      console.warn("No valid borrower pairs found. Skipping Borrower Pairs section.");
-      return;
-    }
-
-    // STEP 1: Fill Borrower Pairs List
     for (let i = 0; i < validPairs.length; i++) {
       const pair = validPairs[i];
       const pairNumber = i + 1;

@@ -40,6 +40,7 @@ test.only("New loan creation using Borrower Pairs", async ({ page, context }) =>
     const excelData = readExcel("./test_Data/NewLoan.xlsm");
     const loansSheet = excelData["Loans"];
     const borrowerPairsSheet = excelData["Borrower Pairs"];
+    console.log("Total loans in loansSheet:", loansSheet.length);
 
     const loginPage = new sections.LoginPage(test, page);
     await loginPage.launchingApplication([process.env.baseURL]);
@@ -63,12 +64,16 @@ test.only("New loan creation using Borrower Pairs", async ({ page, context }) =>
         const loanNumber = loanData["Loan Number"];
         console.log(`STARTING LOAN ${loanNumber}`);
         const borrowerPairs = await getBorrowerPairsForLoan(borrowerPairsSheet, loanNumber);
-        console.log(`Borrower Pairs found for Loan ${loanNumber}:`, borrowerPairs.length);
-        if (borrowerPairs.length > 0) {
-            await encompassPage.fillingBorrowerPairs(borrowerPairs);
-        } else {
-            console.warn(`No borrower pairs found for Loan ${loanNumber}`);
+        const validPairs = borrowerPairs.filter(row =>
+            Object.keys(row).some(key => key.includes("First Name") && row[key])
+        );
+        console.log(`Borrower Pairs found for Loan ${loanNumber}: ${borrowerPairs.length}`);
+        console.log(`Valid Borrower Pairs: ${validPairs.length}`);
+        if (validPairs.length === 0) {
+            console.warn(`Skipping Loan ${loanNumber}: No valid borrower pairs found`);
+            continue; // move to next loan
         }
+        await encompassPage.fillingBorrowerPairs(borrowerPairs);
         await encompassPage.fillingPropertyTitleandTrustFromPairs(loanData);
         await encompassPage.fillingLoanInfoFromPairs(loanData);
         await encompassPage.fillAcknowledgmentAgreement();

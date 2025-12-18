@@ -1,0 +1,5 @@
+Total loans in loansSheet: 3
+STARTING LOAN 1
+Borrower Pairs found for Loan 1: 2
+Valid Borrower Pairs: 1
+Total borrower pairs to fill: 1
