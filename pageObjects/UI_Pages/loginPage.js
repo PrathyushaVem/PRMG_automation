@@ -1,5 +1,5 @@
 const { excuteSteps } = require("../../utilities/actions");
-const { test,expect } = require("@playwright/test");
+const { test, expect } = require("@playwright/test");
 const {
   highlightElement,
   highlighterRemove,
@@ -8,12 +8,18 @@ exports.LoginPage = class LoginPage {
   constructor(test, page) {
     this.test = test;
     this.page = page;
-    this.username=page.locator("//input[@name='identifier']");
-    this.nextBtn=page.locator("//input[@value='Next']");
-    this.password=page.locator("//input[@name='credentials.passcode']");
-    this.verifyBtn=page.locator("//input[@value='Verify']");
-    this.encompass=page.locator("//span[text()='LO Connect']");
-    this.myappHeader=page.locator("//h1[text()='My Apps']");
+    this.username =//page.locator("//input[@name='identifier']");
+      page.getByRole('textbox', { name: 'Username' });
+    this.nextBtn = //page.locator("(//input[@value='Next'])[1]");
+      page.getByRole('button').first();
+    this.password = //page.locator("//input[@name='credentials.passcode']");
+      page.getByRole('textbox', { name: 'Password' });
+    this.verifyBtn = //page.locator("//input[@value='Verify']");
+      page.getByRole('button', { name: 'Verify' });
+    this.encompass = //page.locator("//span[text()='LO Connect']");
+      page.getByText('LO Connect');
+    this.myappHeader = //page.locator("//h1[text()='My Apps']");
+      page.getByRole('heading', { name: 'My Apps' });
   }
   launchingApplication = async (baseUrl) => {
     await excuteSteps(
@@ -42,17 +48,17 @@ exports.LoginPage = class LoginPage {
       pwd
     );
   };
-  
-  clickOnNextBtn = async()=>{
-    await excuteSteps(this.test,this.nextBtn,"click",`Clicking on next button`);
+
+  clickOnNextBtn = async () => {
+    await excuteSteps(this.test, this.nextBtn, "click", `Clicking on next button`);
   };
 
-  scrollTillEncompass = async()=>{
-    await excuteSteps(this.test,this.encompass,"scroll",`Scrolling till encompass application`);
+  scrollTillEncompass = async () => {
+    await excuteSteps(this.test, this.encompass, "scroll", `Scrolling till encompass application`);
   };
 
-  clickOnEncompass = async()=>{
-    await excuteSteps(this.test,this.encompass,"click",`Clicking on ecompass application`);
+  clickOnEncompass = async () => {
+    await excuteSteps(this.test, this.encompass, "click", `Clicking on ecompass application`);
   };
 
   clickOnVerifyButton = async () => {
@@ -65,14 +71,14 @@ exports.LoginPage = class LoginPage {
   };
 
   loginWithValidCredentials = async (email, pwd) => {
-    await highlightElement(this.page,this.username);
+    await highlightElement(this.page, this.username);
     await this.fillingUsername(email);
-    await highlightElement(this.page,this.nextBtn);
+    await highlightElement(this.page, this.nextBtn);
     await this.clickOnNextBtn();
-    await highlightElement(this.page,this.password);
+    await highlightElement(this.page, this.password);
     await this.fillingPassword(pwd);
-    await highlightElement(this.page,this.verifyBtn);
-    await this.clickOnVerifyButton(); 
+    await highlightElement(this.page, this.verifyBtn);
+    await this.clickOnVerifyButton();
   };
 
 };
